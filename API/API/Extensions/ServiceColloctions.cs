@@ -49,14 +49,17 @@ namespace API.Extensions
         private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(
-                (options =>
+            services.AddSwaggerGen(options =>
+            {
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+                // Only include XML comments if file exists
+                if (File.Exists(xmlPath))
                 {
-                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                     options.IncludeXmlComments(xmlPath);
-                })
-                );
+                }
+            });
             return services;
         }
 
@@ -64,7 +67,10 @@ namespace API.Extensions
         private static IServiceCollection AddSqlServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("sqlConnection")));
+                options.UseSqlServer(
+                    configuration.GetConnectionString("sqlConnection"),
+                    b => b.MigrationsAssembly("API")
+                          .MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
 
             return services;
         }
