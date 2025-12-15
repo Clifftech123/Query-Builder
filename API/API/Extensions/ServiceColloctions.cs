@@ -59,6 +59,9 @@ namespace API.Extensions
                 {
                     options.IncludeXmlComments(xmlPath);
                 }
+
+                // Add file upload support for Swagger
+                options.OperationFilter<FileUploadOperationFilter>();
             });
             return services;
         }

@@ -22,7 +22,7 @@ namespace API.Controllers
         /// </summary>
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
-        public async Task<ActionResult<ApiResponse<ExcelUploadResponse>>> UploadExcel([FromForm] IFormFile file, [FromForm] Guid configurationId)
+        public async Task<ActionResult<ApiResponse<ExcelUploadResponse>>> UploadExcel(IFormFile file, [FromForm] Guid configurationId)
         {
             var response = await _excelService.UploadExcelAsync(file, configurationId);
 

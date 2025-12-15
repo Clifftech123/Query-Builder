@@ -52,8 +52,7 @@ namespace API.Application.Services
                 await file.CopyToAsync(stream);
                 stream.Position = 0;
 
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
+                ExcelPackage.License.SetNonCommercialPersonal("PersonalUse");
                 using var package = new ExcelPackage(stream);
                 var worksheet = package.Workbook.Worksheets[0];
 
@@ -137,6 +136,8 @@ namespace API.Application.Services
 
             try
             {
+                _logger.LogInformation("Starting Excel upload for configuration ID: {ConfigurationId}", configurationId);
+
                 // Get configuration with related data
                 var config = await _context.Configurations
                     .Include(c => c.Industry)
@@ -146,29 +147,38 @@ namespace API.Application.Services
 
                 if (config == null)
                 {
+                    _logger.LogWarning("Configuration not found for ID: {ConfigurationId}", configurationId);
                     response.Success = false;
                     response.Message = "Configuration not found";
                     response.ValidationErrors = ["Invalid configuration ID"];
                     return response;
                 }
 
+                _logger.LogInformation("Configuration found: {ConfigName}, Industry: {Industry}, Product: {Product}, SubType: {SubType}",
+                    config.Name, config.Industry.Name, config.Product.Name, config.ProductSubType.Name);
+
                 // Save file to disk for audit/backup purposes
                 savedFilePath = await SaveFileToDiscAsync(file);
+                _logger.LogInformation("File saved to: {FilePath}", savedFilePath);
 
                 // Read the saved file
                 var fileInfo = new FileInfo(savedFilePath);
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                ExcelPackage.License.SetNonCommercialPersonal("PersonalUse");
 
                 using var package = new ExcelPackage(fileInfo);
                 var worksheet = package.Workbook.Worksheets[0];
 
                 if (worksheet == null || worksheet.Dimension == null)
                 {
+                    _logger.LogWarning("Excel worksheet is empty or null");
                     response.Success = false;
                     response.Message = "Excel sheet is empty";
                     response.ValidationErrors = ["No data found in Excel"];
                     return response;
                 }
+
+                _logger.LogInformation("Excel worksheet loaded. Row count: {RowCount}, Column count: {ColumnCount}",
+                    worksheet.Dimension.End.Row, worksheet.Dimension.End.Column);
 
                 // Insert 3 new columns at the beginning for Industry, Product, ProductSubType
                 worksheet.InsertColumn(1, 3);
@@ -187,13 +197,28 @@ namespace API.Application.Services
                     worksheet.Cells[row, 3].Value = config.ProductSubType.Name;
                 }
 
+                _logger.LogInformation("Added configuration columns to {RowCount} rows", rowCount - 1);
+
                 // Now read the modified worksheet
                 var reader = new ExcelTransactionReader(worksheet, headerRow: 1, detectDataTypes: true);
 
                 var tableName = $"Upload_{configurationId:N}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-                var connectionString = _configuration.GetConnectionString("DefaultConnection")!;
 
+                // Fix: Use correct connection string name
+                var connectionString = _configuration.GetConnectionString("sqlConnection");
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    _logger.LogError("Connection string 'sqlConnection' not found in configuration");
+                    response.Success = false;
+                    response.Message = "Database connection configuration error";
+                    response.ValidationErrors = ["Connection string not configured"];
+                    return response;
+                }
+
+                _logger.LogInformation("Starting bulk insert to table: {TableName}", tableName);
                 DynamicTableHelper.BulkInsert(connectionString, tableName, reader);
+                _logger.LogInformation("Bulk insert completed successfully");
 
                 // Get column info
                 var columns = new List<ExcelColumnInfo>();
@@ -213,11 +238,15 @@ namespace API.Application.Services
                 response.RowCount = rowCount - 1; // Excluding header
                 response.Columns = columns;
 
+                _logger.LogInformation("Excel upload completed. Table: {TableName}, Rows: {RowCount}, Columns: {ColumnCount}",
+                    tableName, response.RowCount, columns.Count);
+
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading Excel file");
+                _logger.LogError(ex, "Error uploading Excel file for configuration {ConfigurationId}: {Message}",
+                    configurationId, ex.Message);
 
                 // Clean up saved file if processing failed
                 if (savedFilePath != null && File.Exists(savedFilePath))
@@ -225,6 +254,7 @@ namespace API.Application.Services
                     try
                     {
                         File.Delete(savedFilePath);
+                        _logger.LogInformation("Cleaned up file after error: {FilePath}", savedFilePath);
                     }
                     catch (Exception deleteEx)
                     {

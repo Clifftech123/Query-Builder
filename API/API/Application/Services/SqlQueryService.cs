@@ -1,7 +1,6 @@
 using API.Application.Abstractions;
 using API.Application.DTOs;
 using Microsoft.Data.SqlClient;
-using System.Data;
 
 namespace API.Application.Services
 {
@@ -12,6 +11,7 @@ namespace API.Application.Services
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<SqlQueryService> _logger;
+
 
         public SqlQueryService(IConfiguration configuration, ILogger<SqlQueryService> logger)
         {
@@ -35,7 +35,7 @@ namespace API.Application.Services
 
             try
             {
-                var connectionString = _configuration.GetConnectionString("DefaultConnection")!;
+                var connectionString = _configuration.GetConnectionString("sqlConnection")!;
 
                 using var connection = new SqlConnection(connectionString);
                 await connection.OpenAsync();
@@ -88,7 +88,7 @@ namespace API.Application.Services
 
             try
             {
-                var connectionString = _configuration.GetConnectionString("DefaultConnection")!;
+                var connectionString = _configuration.GetConnectionString("sqlConnection")!;
 
                 using var connection = new SqlConnection(connectionString);
                 await connection.OpenAsync();
