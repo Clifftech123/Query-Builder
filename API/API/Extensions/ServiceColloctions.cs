@@ -11,6 +11,9 @@ namespace API.Extensions
     /// </summary>
     public static class ServiceCollections
     {
+
+
+        #region Add All Services
         /// <summary>
         /// Adds all application services and configurations
         /// </summary>
@@ -34,6 +37,10 @@ namespace API.Extensions
             return services;
         }
 
+        #endregion
+
+        #region Global Exception Handler
+
         /// <summary>
         /// Adds global exception handler to the service collection
         /// </summary>
@@ -45,7 +52,13 @@ namespace API.Extensions
             return services;
         }
 
-        // Adding of swagger services
+        #endregion
+
+        #region Add Swagger Services
+
+        /// <summary>
+        /// Adds Swagger services to the service collection
+        /// </summary>
         private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
@@ -66,6 +79,12 @@ namespace API.Extensions
             return services;
         }
 
+        #endregion
+
+        #region Add SQL Services
+        /// <summary>
+        /// 
+
         //Addding fo SQL services
         private static IServiceCollection AddSqlServices(this IServiceCollection services, IConfiguration configuration)
         {
@@ -74,9 +93,12 @@ namespace API.Extensions
                     configuration.GetConnectionString("sqlConnection"),
                     b => b.MigrationsAssembly("API")
                           .MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
-
             return services;
         }
+
+        #endregion
+
+        #region Add Application Services
 
         /// <summary>
         /// Adds application services
@@ -95,6 +117,9 @@ namespace API.Extensions
 
             return services;
         }
+        #endregion
+
+        #region 
 
         /// <summary>
         /// Uses global exception handler in the application pipeline
@@ -105,5 +130,7 @@ namespace API.Extensions
 
             return app;
         }
+
+        #endregion
     }
 }

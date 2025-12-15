@@ -1,0 +1,3 @@
+{
+  "query": "SELECT Country, Product_1 as Product, DiscountBand, COUNT(*) as LossCount, SUM(CAST(GrossSales as DECIMAL(18,2))) as TotalRevenue, SUM(CAST(Profit as DECIMAL(18,2))) as TotalLoss, AVG(CAST(Discounts as DECIMAL(18,2))) as AvgDiscount FROM [Upload_edaa4303640341b48950bb3eb0385f60_20251215203858] WHERE CAST(Profit as DECIMAL(18,2)) < 0 AND Segment = 'Enterprise' GROUP BY Country, Product_1, DiscountBand ORDER BY TotalLoss ASC"
+}

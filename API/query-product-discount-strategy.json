@@ -1,0 +1,3 @@
+{
+  "query": "SELECT Product_1 as Product, DiscountBand, Segment, COUNT(*) as Sales, AVG(CAST(UnitsSold as DECIMAL(18,2))) as AvgUnits, AVG(CAST(GrossSales as DECIMAL(18,2))) as AvgRevenue, AVG(CAST(Profit as DECIMAL(18,2))) as AvgProfit, (SUM(CAST(Profit as DECIMAL(18,2))) / SUM(CAST(GrossSales as DECIMAL(18,2))) * 100) as ProfitMargin FROM [Upload_edaa4303640341b48950bb3eb0385f60_20251215203858] WHERE Segment = 'Government' GROUP BY Product_1, DiscountBand, Segment ORDER BY AvgProfit DESC"
+}

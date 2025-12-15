@@ -1,0 +1,3 @@
+{
+  "query": "SELECT DiscountBand, COUNT(*) as Count, AVG(CAST(Discounts as DECIMAL(18,2))) as AvgDiscount, SUM(CAST(GrossSales as DECIMAL(18,2))) as TotalSales, SUM(CAST(Profit as DECIMAL(18,2))) as TotalProfit FROM [Upload_edaa4303640341b48950bb3eb0385f60_20251215203858] GROUP BY DiscountBand ORDER BY TotalSales DESC"
+}

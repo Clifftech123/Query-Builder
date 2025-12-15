@@ -1,0 +1,3 @@
+{
+  "query": "SELECT Country, Segment, MonthName, Year, SUM(CAST(GrossSales as DECIMAL(18,2))) as MonthlyRevenue, SUM(CAST(Profit as DECIMAL(18,2))) as MonthlyProfit, COUNT(*) as TransactionCount FROM [Upload_edaa4303640341b48950bb3eb0385f60_20251215203858] WHERE DiscountBand = 'None' AND CAST(GrossSales as DECIMAL(18,2)) > 50000 GROUP BY Country, Segment, MonthName, Year HAVING SUM(CAST(GrossSales as DECIMAL(18,2))) > 100000 ORDER BY MonthlyProfit DESC"
+}

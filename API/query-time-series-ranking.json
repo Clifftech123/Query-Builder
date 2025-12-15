@@ -1,0 +1,3 @@
+{
+  "query": "WITH MonthlyStats AS (SELECT MonthName, Year, SUM(CAST(GrossSales as DECIMAL(18,2))) as Revenue, SUM(CAST(Profit as DECIMAL(18,2))) as Profit, COUNT(*) as Transactions FROM [Upload_edaa4303640341b48950bb3eb0385f60_20251215203858] GROUP BY MonthName, Year), RankedMonths AS (SELECT MonthName, Year, Revenue, Profit, Transactions, ROW_NUMBER() OVER (ORDER BY Revenue DESC) as RevenueRank, ROW_NUMBER() OVER (ORDER BY Profit DESC) as ProfitRank FROM MonthlyStats) SELECT MonthName, Year, Revenue, Profit, Transactions, RevenueRank, ProfitRank FROM RankedMonths ORDER BY RevenueRank"
+}
